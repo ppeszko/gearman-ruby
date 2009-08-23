@@ -188,7 +188,7 @@ class Util
   #
   # @param str  message to log
   def Util.log(str, force=false)
-    puts "#{Time.now.strftime '%Y%m%d %H%M%S'} #{str}" if force or @@debug
+    puts "#{Time.now.strftime '%Y-%m-%d %H:%M:%S'} #{str}" if force or @@debug
   end
 
   ##

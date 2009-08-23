@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'eventmachine'
+
 #!/usr/bin/env ruby
 #
 # = Name
@@ -64,10 +67,16 @@ require File.dirname(__FILE__) + '/gearman/taskset'
 require File.dirname(__FILE__) + '/gearman/util'
 require File.dirname(__FILE__) + '/gearman/worker'
 
-class InvalidArgsError < Exception
-end
+require File.dirname(__FILE__) + '/gearman/protocol'
 
-class ProtocolError < Exception
+require File.dirname(__FILE__) + '/gearman/evented/reactor'
+require File.dirname(__FILE__) + '/gearman/evented/job'
+require File.dirname(__FILE__) + '/gearman/evented/task'
+require File.dirname(__FILE__) + '/gearman/evented/taskset'
+require File.dirname(__FILE__) + '/gearman/evented/client'
+require File.dirname(__FILE__) + '/gearman/evented/worker'
+
+class InvalidArgsError < Exception
 end
 
 class NetworkError < Exception
