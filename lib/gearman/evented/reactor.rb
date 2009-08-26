@@ -4,16 +4,23 @@ module Gearman
     module Reactor
       include EM::Deferrable
 
-      def connect(reactor, host, port, opts = {})
-        conn = EM.connect(host, (port || 4730), reactor) do |c|
+      def self.included(mod)
+        mod.instance_eval do
+          def connect(host, port, callback_handler, opts = {})
+            Gearman::Evented::Reactor.connect(host, port, callback_handler, self, opts)
+          end
+        end
+      end
+
+      def self.connect(host, port, callback_handler, reactor, opts = {})
+        EM.connect(host, (port || 4730), reactor) do |c|
           c.instance_eval do
             @host = host
             @port = port || 4730
             @opts = opts
-            @connection ||= conn
+            @callback_handler = callback_handler
           end
         end
-        @connection ||= conn
       end
 
       def connected?
@@ -25,13 +32,14 @@ module Gearman
       end
 
       def connection_completed
-        log "connected #{@connection}"
+        log "connected to #{@host}:#{@port}"
         @connected = true
         @reconnecting = false
+        succeed
       end
 
       def unbind
-        log 'disconnected'
+        log "disconnected from #{@host}:#{@port}"
         @connected = false
         EM.next_tick { reconnect }
       end
@@ -45,17 +53,21 @@ module Gearman
           @deferred_status = nil
         end
 
-        log 'reconnecting'
+        log "reconnecting to #{@host}:#{@port}"
         EM.reconnect(@host, @port.to_i, self)
       end
 
       def send(command, data = nil)
-        log "[#{self}] Send #{command} on connection #{@connection}"
+        log "send #{command} #{data.inspect} (#{server})"
         send_data(Gearman::Protocol.encode_request(command, data))
       end
 
       def log(msg)
         Gearman::Util.log msg
+      end
+
+      def to_s
+        "#{@host}:#{@port}"
       end
     end
 

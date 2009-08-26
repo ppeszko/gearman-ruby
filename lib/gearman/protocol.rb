@@ -69,11 +69,35 @@ module Gearman
 
         buf, *more = data[12, data.size].split("\0RES")
         handle, data = buf ? buf.split("\0", 2) : nil
-        packets << [type, handle, data]
+        packets << response_packet(type, handle, data)
         more.each do |packet|
           decode_response("\0RES#{packet}", packets)
         end
         packets
+      end
+
+      def response_packet(type, handle, data)
+        case type
+        when :work_complete,
+             :work_exception,
+             :work_warning,
+             :work_data,
+             :error
+          [type, handle, data]
+        when :job_assign
+          func, data = data.split("\0", 3)
+          [type, handle, func.to_s, data]
+        when :work_fail,
+             :job_created,
+             :no_job,
+             :noop
+          [type, handle]
+        when :work_status
+          num, den = data.split("\0", 3)
+          [type, handle, num, den]
+        else
+          raise ProtocolError, "Invalid packet #{type}"
+        end
       end
     end
   end

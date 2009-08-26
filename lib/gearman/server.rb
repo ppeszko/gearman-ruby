@@ -45,14 +45,14 @@ class Server
   def send_command(name)
     response = ''
     socket.puts(name)
-    while true do 
+    while true do
       if buf = socket.recv_nonblock(65536) rescue nil
-        response << buf 
+        response << buf
         return response if response =~ /\n.\n$/
       end
     end
   end
-  
+
   ##
   # Returns results of a 'status' command.
   #
@@ -68,7 +68,7 @@ class Server
     end
     status
   end
-  
+
   ##
   # Returns results of a 'workers' command.
   #
