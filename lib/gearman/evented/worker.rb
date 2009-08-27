@@ -4,14 +4,16 @@ module Gearman
     module WorkerReactor
       include Gearman::Evented::Reactor
 
-      def worker
-        @callback_handler
-      end
-
       def connection_completed
         send :set_client_id, client_id
-        @cbs_job_assign = []
         super
+
+        @abilities = @opts.delete(:abilities) || []
+        @abilities.each do |ability, args|
+          announce_ability(ability, args[:timeout])
+        end
+
+        grab_job
       end
 
       def announce_ability(name, timeout)
@@ -28,7 +30,6 @@ module Gearman
       def grab_job(&cb_job_assign)
         log "Grab Job"
         send :grab_job
-        @cb_job_assign = cb_job_assign if cb_job_assign
       end
 
       def work_fail(handle)
@@ -55,11 +56,10 @@ module Gearman
         case type
         when :no_job
           send :pre_sleep
-          timer = @opts[:reconnect_sec] || 10
+          timer = @opts[:reconnect_sec] || 30
         when :job_assign
-          # handle_job_assign(handle, *data)
           log "job assign #{handle}, #{data}"
-          @cb_job_assign.call(handle, data[0], data[1])
+          handle_job_assign(handle, data[0], data[1])
         when :noop
           log "NOOP"
         when :error
@@ -70,6 +70,42 @@ module Gearman
 
         EM.add_timer(timer) { grab_job }
         succeed [handle, data]
+      end
+
+      def handle_job_assign(handle, func, args = '')
+        return unless handle
+        unless func
+          log "ERROR: Ignoring job_assign with no function"
+          return
+        end
+
+        log "Got job_assign '#{func}' with handle #{handle} and #{args.size rescue 0} byte(s)"
+
+        unless @abilities.has_key?(func)
+          log "Ignoring job_assign for unsupported func #{func} with handle #{handle}"
+          work_fail handle
+          return
+        end
+
+        exception = nil
+        begin
+          ret = @abilities[func][:callback].call(args, Gearman::Job.new(self, handle))
+        rescue Exception => e
+          exception = e
+        end
+
+        if ret && exception.nil?
+          ret = ret.to_s
+          log "Sending work_complete for #{handle} with #{ret.size} byte(s)"
+          work_complete handle, ret
+        elsif exception.nil?
+          log "Sending work_fail for #{handle} to #{server}"
+          work_fail handle
+        elsif exception
+          log "exception #{exception.message}, sending work_warning, work_fail for #{handle}"
+          work_warning handle, exception.message
+          work_fail handle
+        end
       end
 
       def client_id

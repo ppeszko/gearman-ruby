@@ -1,7 +1,7 @@
 module Gearman
   class Task
 
-    attr_reader :name, :payload, :priority, :background, :retries_done
+    attr_reader :name, :payload, :priority, :background, :retries_done, :poll_status_interval
 
     def initialize(name, payload = nil, opts = {})
       @name       = name.to_s
@@ -11,6 +11,8 @@ module Gearman
 
       @retries_done = 0
       @retry_count  = opts.delete(:retry_count) || 0
+
+      @poll_status_interval = opts.delete(:poll_status_interval)
     end
 
     ##

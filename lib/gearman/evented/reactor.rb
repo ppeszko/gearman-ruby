@@ -6,19 +6,18 @@ module Gearman
 
       def self.included(mod)
         mod.instance_eval do
-          def connect(host, port, callback_handler, opts = {})
-            Gearman::Evented::Reactor.connect(host, port, callback_handler, self, opts)
+          def connect(host, port, opts = {})
+            Gearman::Evented::Reactor.connect(host, port, self, opts)
           end
         end
       end
 
-      def self.connect(host, port, callback_handler, reactor, opts = {})
+      def self.connect(host, port, reactor, opts = {})
         EM.connect(host, (port || 4730), reactor) do |c|
           c.instance_eval do
             @host = host
             @port = port || 4730
             @opts = opts
-            @callback_handler = callback_handler
           end
         end
       end

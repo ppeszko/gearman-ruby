@@ -10,12 +10,16 @@ w = Gearman::Worker.new(servers)
 # number of seconds to sleep before reporting success.
 w.add_ability('sleep') do |data, job|
  seconds = data
+ job.report_warning("this is a warning you can safely ignore")
+
  (1..seconds.to_i).each do |i|
    sleep 1
    print i
    # Report our progress to the job server every second.
    job.report_status(i, seconds)
+   job.send_partial(".")
  end
+
  # Report success.
  "SUCCESS"
 end

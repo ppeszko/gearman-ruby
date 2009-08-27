@@ -95,6 +95,9 @@ module Gearman
         when :work_status
           num, den = data.split("\0", 3)
           [type, handle, num, den]
+        when :status_res
+          known, running, num, den = data.split("\0", 4)
+          [type, handle, known, running, num, den]
         else
           raise ProtocolError, "Invalid packet #{type}"
         end

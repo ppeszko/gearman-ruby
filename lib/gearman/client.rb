@@ -6,11 +6,7 @@ module Gearman
       @reactors = []
       @jobs = {}
 
-      @job_servers = if job_servers.is_a?(String)
-        [ job_servers ]
-      else
-        job_servers
-      end
+      @job_servers = job_servers.kind_of?(Array) ? job_servers : [ job_servers ]
 
       @uniq = opts.delete(:uniq)
       @opts = opts
@@ -22,50 +18,26 @@ module Gearman
 
         @job_servers.each do |hostport|
           host, port = hostport.split(":")
-          reactor = Gearman::Evented::ClientReactor.connect(host, port, self, @opts)
+          reactor = Gearman::Evented::ClientReactor.connect(host, port, @opts)
           reactor.callback { create_job(@taskset.shift, reactor) }
           @reactors << reactor
         end
       end
     end
 
-    def create_job(task, reactor = nil)
-      return unless task
-      server = reactor || @reactors[rand(@reactors.size)]
-      unless server.connected?
-        log "create_job: server #{server} not connected"
-        create_job(task)
-        return
-      end
-
-      server.submit_job(task) do |handle|
-        log "create_job succeeded: #{handle}"
-        @jobs[handle] = task
-        create_job(@taskset.shift)
-        server.dispatch_packet_callback do |type, handle, data|
-          dispatch(type, handle, data)
-        end
-      end
-    end
-
-    def dispatch(type, handle, args)
-      log "dispatch #{type}, #{handle}, #{args}"
-      return unless type
-      task = @jobs[handle]
-      raise ProtocolError, "No task by that name: #{handle}" unless task
-
-      if :work_fail == type && task.should_retry?
-        task.dispatch(:on_retry, task.retries_done)
-        create_job(task)
-        return
-      end
-
-      task.dispatch(type.to_s.sub("work", "on").to_sym, *args)
-      @jobs.delete(handle) unless [:work_status, :work_exception].include?(type)
-      EM.stop if @jobs.empty?
-    end
-
     private
+
+      def create_job(task, reactor = nil)
+        return unless task
+        reactor ||= @reactors[rand(@reactors.size)]
+        unless reactor.connected?
+          log "create_job: server #{reactor} not connected"
+          create_job(task)
+          return
+        end
+
+        reactor.submit_job(task) {|handle| create_job(@taskset.shift) }
+      end
 
       def log(msg)
         Gearman::Util.log msg
