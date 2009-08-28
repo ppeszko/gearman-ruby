@@ -13,6 +13,7 @@ module Gearman
       @retry_count  = opts.delete(:retry_count) || 0
 
       @poll_status_interval = opts.delete(:poll_status_interval)
+      @uniq = opts.has_key?(:uuid) ? opts.delete(:uuid) : `uuidgen`.strip
     end
 
     ##
@@ -87,9 +88,7 @@ module Gearman
     end
 
     def hash
-      return @hash if @hash
-      merge_on = (@uniq and @uniq == '-') ? @payload : @uniq
-      @hash = merge_on ? merge_on.hash.to_s : ''
+      @uniq
     end
   end
 end

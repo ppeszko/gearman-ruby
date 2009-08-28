@@ -29,7 +29,7 @@ module Gearman
 
       def grab_job(&cb_job_assign)
         log "Grab Job"
-        send :grab_job
+        send :grab_job_uniq
       end
 
       def work_fail(handle)
@@ -57,15 +57,15 @@ module Gearman
         when :no_job
           send :pre_sleep
           timer = @opts[:reconnect_sec] || 30
-        when :job_assign
-          log "job assign #{handle}, #{data}"
+        when :job_assign, :job_assign_uniq
+          log "job assign #{handle}, #{data.inspect}"
           handle_job_assign(handle, data[0], data[1])
         when :noop
           log "NOOP"
         when :error
           log "[ERROR]: error from server #{server}: #{data}"
         else
-          log "Got unknown #{type} from #{server}"
+          log "Got unknown #{type}, #{data} from #{server}"
         end
 
         EM.add_timer(timer) { grab_job }

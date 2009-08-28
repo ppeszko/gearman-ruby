@@ -87,6 +87,9 @@ module Gearman
         when :job_assign
           func, data = data.split("\0", 3)
           [type, handle, func.to_s, data]
+        when :job_assign_uniq
+          func, uuid, data = data.split("\0", 3)
+          [type, handle, func.to_s, data, uuid]
         when :work_fail,
              :job_created,
              :no_job,
