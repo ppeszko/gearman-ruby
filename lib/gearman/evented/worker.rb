@@ -109,10 +109,7 @@ module Gearman
       end
 
       def client_id
-        @client_id ||= begin
-          chars = ('a'..'z').to_a
-          Array.new(30) { chars[rand(chars.size)] }.join
-        end
+        @client_id ||= `uuidgen`.strip
       end
 
     end
