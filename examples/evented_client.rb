@@ -13,7 +13,7 @@ task.on_status {|numerator, denominator| puts "TASK 1: Completed #{numerator} of
 task.on_complete {|d| puts "TASK 1: #{d}" }
 taskset << task
 
-task = Gearman::Task.new('sleep', 5, :poll_status_interval => 1)
+task = Gearman::Task.new('sleep', 15, :poll_status_interval => 2)
 task.on_status {|numerator, denominator| puts "TASK 2: Completed #{numerator} of #{denominator}"}
 task.on_data {|data| puts "TASK 2 DATA: #{data}" }
 task.on_complete {|d| puts "TASK 2: #{d}" }

@@ -12,7 +12,9 @@ module Gearman
       end
 
       def receive_data(data)
-        Gearman::Protocol.decode_response(data).each do |type, handle, *data|
+        packets = Gearman::Protocol.decode_response(data)
+        log "received #{packets.size} packet(s) at once"
+        packets.each do |type, handle, *data|
           dispatch_packet(type, handle, *data)
         end
       end
