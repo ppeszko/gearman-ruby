@@ -11,4 +11,4 @@ w = Gearman::Worker.new(servers)
 w.add_ability('fail_with_exception') do |data,job|
   raise Exception.new("Exception in worker (args: #{data.inspect})")
 end
-loop { w.work }
+w.work

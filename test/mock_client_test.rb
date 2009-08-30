@@ -228,7 +228,7 @@ class TestClient < Test::Unit::TestCase
 
     c.exec { client = Gearman::Client.new("localhost:#{server.port}") }
 
-    task = Gearman::Task.new('foo', 'bar', { :retry_count => 3 })
+    task = Gearman::Task.new('foo', 'bar', { :retries => 3 })
     task.on_fail { failed = true }
     task.on_retry {|r| retries = r }
     task.on_status {|n,d| num = n.to_i; den = d.to_i }
@@ -605,7 +605,7 @@ class TestClient < Test::Unit::TestCase
     client_thread = Thread.new { c.loop_forever }.run
 
     c.exec { client = Gearman::Client.new("localhost:#{server.port}") }
-    task = Gearman::Task.new('foo', 'bar', { :retry_count => 3 })
+    task = Gearman::Task.new('foo', 'bar', { :retries => 3 })
     received_data = ""
     task.on_data {|data| received_data << data }
     task.on_complete {|data| received_data << data}

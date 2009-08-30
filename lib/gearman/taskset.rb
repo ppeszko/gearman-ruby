@@ -2,7 +2,8 @@ module Gearman
   class Taskset
 
     def initialize(tasks = [])
-      @tasks = tasks
+      @tasks = []
+      @tasks << tasks
     end
 
     def add(task)

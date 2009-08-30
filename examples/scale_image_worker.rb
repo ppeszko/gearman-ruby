@@ -31,4 +31,4 @@ worker.add_ability('scale_image') do |data,job|
   image.to_blob
 end
 
-loop { worker.work }
+worker.work

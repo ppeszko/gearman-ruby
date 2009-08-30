@@ -20,4 +20,4 @@ w.add_ability('sleep') do |data,job|
  # Report success.
  true
 end
-loop { w.work }
+w.work

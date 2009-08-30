@@ -1,7 +1,8 @@
 module Gearman
   class Task
 
-    attr_reader :name, :payload, :priority, :background, :retries_done, :poll_status_interval
+    attr_reader :name, :payload, :retries_done
+    attr_accessor :retries, :priority, :background, :poll_status_interval
 
     def initialize(name, payload = nil, opts = {})
       @name       = name.to_s
@@ -10,7 +11,7 @@ module Gearman
       @background = opts.delete(:background) ? true : false
 
       @retries_done = 0
-      @retry_count  = opts.delete(:retry_count) || 0
+      @retries      = opts.delete(:retries) || 0
 
       @poll_status_interval = opts.delete(:poll_status_interval)
       @uniq = opts.has_key?(:uuid) ? opts.delete(:uuid) : `uuidgen`.strip
@@ -77,9 +78,13 @@ module Gearman
     #
     # @return  true if we should be resubmitted; false otherwise
     def should_retry?
-      return false if @retries_done >= @retry_count
+      return false if @retries_done >= @retries
       @retries_done += 1
       true
+    end
+
+    def background?
+      background
     end
 
     def dispatch(event, *args)

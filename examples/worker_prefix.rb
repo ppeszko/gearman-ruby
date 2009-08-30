@@ -22,4 +22,4 @@ w.add_ability(ability_name_with_prefix) do |data,job|
  # Report success.
  true
 end
-loop { w.work }
+w.work

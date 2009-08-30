@@ -24,9 +24,7 @@ if ARGV.size != 2
 end
 
 client = Gearman::Client.new(servers.split(','), 'example')
-taskset = Gearman::TaskSet.new(client)
 arg = [width, height, format, File.read(ARGV[0])].join("\0")
 task = Gearman::Task.new('scale_image', arg)
 task.on_complete {|d| File.new(ARGV[1],'w').write(d) }
-taskset.add_task(task)
-taskset.wait(10)
+client.run task

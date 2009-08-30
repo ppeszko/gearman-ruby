@@ -49,8 +49,9 @@ module Gearman
       def job_created(handle)
         job = @pending_jobs.shift
         raise ProtocolError, "No job waiting for handle! (#{handle})" unless job
-        @assigned_jobs[handle] = job
         EM.add_periodic_timer(job.poll_status_interval) { get_status(handle) } if job.poll_status_interval
+        return if job.background
+        @assigned_jobs[handle] = job
       end
 
       def get_status(handle)

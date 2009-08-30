@@ -14,7 +14,7 @@ module Gearman
 
     def run(task_or_taskset)
       EM.run do
-        @taskset = task_or_taskset.is_a?(Task) ? Taskset.new(task_or_taskset) : task_or_taskset
+        @taskset = task_or_taskset.kind_of?(Task) ? Taskset.new(task_or_taskset) : task_or_taskset
 
         @job_servers.each do |hostport|
           host, port = hostport.split(":")

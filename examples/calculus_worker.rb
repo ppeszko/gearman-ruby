@@ -5,7 +5,6 @@ require '../lib/gearman'
 #Gearman::Util.debug = true
 
 worker = Gearman::Worker.new('localhost')
-worker.reconnect_sec = 2
 
 # Additon ability
 worker.add_ability('addition') do |data,job|
@@ -40,6 +39,4 @@ worker.add_ability('division') do |data,job|
 end
 
 # Running the workers
-loop do
-  worker.work
-end
+worker.work
