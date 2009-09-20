@@ -7,11 +7,7 @@ module Gearman
       @reactors = []
       @abilities = {}
 
-      @job_servers = if job_servers.is_a?(String)
-        [ job_servers ]
-      else
-        job_servers
-      end
+      @job_servers = Array.new(job_servers)
 
       @opts = opts
     end
