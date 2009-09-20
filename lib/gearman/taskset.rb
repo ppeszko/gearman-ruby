@@ -1,6 +1,11 @@
 module Gearman
   class Taskset
 
+    def self.create(task_or_taskset)
+      return task_or_taskset if task_or_taskset.kind_of?(Taskset)
+      new(task_or_taskset)
+    end
+
     def initialize(tasks = [])
       @tasks = []
       @tasks << tasks

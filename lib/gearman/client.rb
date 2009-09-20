@@ -12,9 +12,10 @@ module Gearman
       @opts = opts
     end
 
-    def run(task_or_taskset)
+    # Run a Task or Taskset
+    def run(taskset)
       EM.run do
-        @taskset = task_or_taskset.kind_of?(Task) ? Taskset.new(task_or_taskset) : task_or_taskset
+        @taskset = Taskset.create(taskset)
 
         @job_servers.each do |hostport|
           host, port = hostport.split(":")
