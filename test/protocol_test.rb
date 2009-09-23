@@ -8,7 +8,9 @@ require 'test/unit'
 class TestClient < Test::Unit::TestCase
 
   def test_encode_request
-
+    payload = ["foo", "123", "bar"].join("\0")
+    expected = "\0REQ" + [Gearman::Protocol::NUMS[:submit_job], payload.size].pack("NN") + payload
+    assert_equal expected, Gearman::Protocol.encode_request(:submit_job, payload)
   end
 
   def test_decode_response
