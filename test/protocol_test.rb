@@ -5,7 +5,7 @@ require 'gearman'
 require 'gearman/testlib'
 require 'test/unit'
 
-class TestClient < Test::Unit::TestCase
+class ProtocolTest < Test::Unit::TestCase
 
   def test_encode_request
     payload = ["foo", "123", "bar"].join("\0")
